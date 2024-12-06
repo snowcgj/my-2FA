@@ -1,0 +1,64 @@
+{
+  "pages": [
+    {
+      "path": "pages/home/home",
+      "style": {
+        "navigationBarTitleText": "Home",
+        "navigationBarTextStyle": "black",
+        "navigationBarBackgroundColor": "#ffffff",
+        "backgroundColor": "#f8f8f8"
+      }
+    },
+    {
+      "path": "pages/backup/backup",
+      "style": {
+        "navigationBarTitleText": "Backup",
+        "navigationBarTextStyle": "black",
+        "navigationBarBackgroundColor": "#ffffff",
+        "backgroundColor": "#f8f8f8"
+      }
+    },
+    {
+      "path": "pages/settings/settings",
+      "style": {
+        "navigationBarTitleText": "Settings",
+        "navigationBarTextStyle": "black",
+        "navigationBarBackgroundColor": "#ffffff",
+        "backgroundColor": "#f8f8f8"
+      }
+    }
+  ],
+  
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "iconPath": "static/icons/home.png",
+        "selectedIconPath": "static/icons/home-selected.png",
+        "text": "Home"
+      },
+      {
+        "pagePath": "pages/backup/backup",
+        "iconPath": "static/icons/backup.png",
+        "selectedIconPath": "static/icons/back-selected.png",
+        "text": "Backup"
+      },
+      {
+        "pagePath": "pages/settings/settings",
+        "iconPath": "static/icons/settings.png",
+        "selectedIconPath": "static/icons/setting-selected.png",
+        "text": "Settings"
+      }
+    ]
+  },
+  "globalStyle": {
+    "navigationBarTextStyle": "black",
+    "navigationBarTitleText": "SafeAuth",
+    "navigationBarBackgroundColor": "#ffffff",
+    "backgroundColor": "#f8f8f8"
+  }
+}
