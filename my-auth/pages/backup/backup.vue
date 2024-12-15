@@ -11,6 +11,13 @@ export default {
     onBackup() {
       // 备份功能的实现
       console.log('备份功能被点击');
+      uni.showToast({
+        title: '功能暂未开发，敬请期待',
+        //将值设置为 success 或者直接不用写icon这个参数
+        icon: 'error',
+        //显示持续时间为 2秒
+        duration: 2000
+      })  
     }
   }
 };

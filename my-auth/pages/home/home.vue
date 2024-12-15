@@ -13,18 +13,21 @@
             <button @click="onExport" class="icon-button">📤</button>
           </view>    
         </view>
-        <button @click="parseQRCode">dd</button>
+       <!-- <button @click="saveAccounts">dd</button> -->
     <!-- 账号列表 -->
     <view class="account-list" >
       <AccountItem
         v-for="account in accounts"
         :key="account.id"
+        :id="account.id"
         :icon="account.icon"
         :app="account.app"
         :name="account.name"
         :code="account.code"
         :countdown="account.countdown"
         :secret="account.secret"
+        @delete-account="onDeleteAccount"
+        @edit-account="onEditAccount"
         @more-options="onMoreOptions(account)"
       />
     </view>
@@ -36,8 +39,6 @@
 
 <script>
 import AccountItem from '@/components/AccountItem.vue';
-
-
 
 
 export default {
@@ -56,24 +57,24 @@ export default {
           countdown: 29,
           secret: 'JBSWY3DPEHPK3PXP',
         },
-        {
-          id: 2,
-          icon: '/static/logo.png', // 没有图标时使用默认图标
-          app: 'hey',
-          name: 'user@example.com',
-          code: '855 954',
-          countdown: 29,
-          secret: 'JBSWY3DPEHPK3PXP'
-        },
-        {
-          id: 3,
-          icon: '/static/logo.png', // 没有图标时使用默认图标
-          app: 'intagram',
-          name: 'user@example.com',
-          code: '855 954',
-          countdown: 29,
-          secret: 'RX5N7QPUYI6BOT7UDQPN54AFSF2QQMJV'
-        },
+        // {
+        //   id: 2,
+        //   icon: '/static/logo.png', // 没有图标时使用默认图标
+        //   app: 'hey',
+        //   name: 'user@example.com',
+        //   code: '855 954',
+        //   countdown: 29,
+        //   secret: 'JBSWY3DPEHPK3PXP'
+        // },
+        // {
+        //   id: 3,
+        //   icon: '/static/logo.png', // 没有图标时使用默认图标
+        //   app: 'intagram',
+        //   name: 'user@example.com',
+        //   code: '855 954',
+        //   countdown: 29,
+        //   secret: 'RX5N7QPUYI6BOT7UDQPN54AFSF2QQMJV'
+        // },
       ]
     };
   },
@@ -99,6 +100,40 @@ export default {
       },
   },
   methods: {
+    // 删除账户
+    onDeleteAccount(accountId) {
+      console.log("acconutId:")
+      console.log(accountId)
+
+      console.log("之前的")
+      console.log(this.accounts)
+
+      this.accounts = this.accounts.filter(account => account.id !== accountId);
+
+      console.log("删除之后的")
+      console.log(this.accounts)
+
+      this.saveAccounts();
+    },
+
+    // 修改账户，跳转到编辑页面
+    onEditAccount(accountId) {
+      uni.showToast({
+        title: '功能暂未开发，敬请期待',
+        //将值设置为 success 或者直接不用写icon这个参数
+        icon: 'error',
+        //显示持续时间为 2秒
+        duration: 2000
+      })  
+      // const account = this.accounts.find(account => account.id === accountId);
+      // console.log("修改账户的：")
+      // console.log(this.accounts)
+      // uni.navigateTo({
+      //   url: `/pages/other/edit-account?id=${accountId}`
+      //   // url: `/pages/other/edit-account`
+      // });
+    },
+
     saveAccountsToStorage() {
       const accountsStr = JSON.stringify(this.accounts);
 
@@ -189,9 +224,9 @@ export default {
         duration: 2000
       })  
     },
-    onEditAccount(account) {
-      console.log('编辑账户', account);
-    },
+    // onEditAccount(account) {
+    //   console.log('编辑账户', account);
+    // },
     onMoreOptions(account) {
       console.log('更多选项被点击', account);
     },
@@ -293,18 +328,26 @@ export default {
       this.saveAccounts();
       uni.showToast({ title: '账户添加成功', icon: 'success' });
     },
+    // saveAccounts() {
+    //     // 将 accounts 数组存储到本地
+    //     uni.setStorage({
+    //       key: 'accounts', // 存储的键名
+    //       data: this.accounts, // 存储的数据
+    //       success: () => {
+    //         console.log('账户数据已成功保存到本地');
+    //       },
+    //       fail: (err) => {
+    //         console.error('保存账户数据失败：', err);
+    //       }
+    //     });
+    // },
     saveAccounts() {
-        // 将 accounts 数组存储到本地
-        uni.setStorage({
-          key: 'accounts', // 存储的键名
-          data: this.accounts, // 存储的数据
-          success: () => {
-            console.log('账户数据已成功保存到本地');
-          },
-          fail: (err) => {
-            console.error('保存账户数据失败：', err);
-          }
-        });
+      try {
+        uni.setStorageSync('accounts', this.accounts); 
+        console.log('数据已保存:', this.accounts);
+      } catch (error) {
+        console.error('数据存储失败:', error);
+      }
     },
     getIcon(appName) {
       // 将应用名称转为小写并拼接为 Iconify 的图标名称
@@ -315,6 +358,7 @@ export default {
    } 
 
 };
+
 </script>
 
 <style scoped>

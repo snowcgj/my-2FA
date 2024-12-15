@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "crypto-js": "^4.2.0",
     "js-sha1": "^0.7.0"
   }
 }

@@ -23,6 +23,13 @@ export default {
       // 切换设置选项
       setting.value = !setting.value;
       console.log('设置选项被切换', setting);
+      uni.showToast({
+        title: '功能暂未开发，敬请期待',
+        //将值设置为 success 或者直接不用写icon这个参数
+        icon: 'error',
+        //显示持续时间为 2秒
+        duration: 2000
+      })  
     }
   }
 };

@@ -12,7 +12,10 @@
         </view>
       </view>
 
-      <button @click="onMoreOptions" class="more-options-button">...</button>
+      <button @click="onMoreOptions" class="more-options-button">
+        <!-- <img src="/static/logo.png" alt="More" class="icon-image" /> -->
+        <uni-icons type="circle" size="30"></uni-icons>
+      </button>
     
     </view>
 
@@ -40,26 +43,13 @@
 //   step: 30, // 30秒间隔
 //   window: 1 // 容错窗口
 // };
-import sha1 from 'js-sha1';
-
-if (typeof globalThis.TextEncoder === 'undefined') {
-  class TextEncoder {
-    encode(str) {
-      const utf8 = unescape(encodeURIComponent(str));
-      const result = new Uint8Array(utf8.length);
-      for (let i = 0; i < utf8.length; i++) {
-        result[i] = utf8.charCodeAt(i);
-      }
-      return result;
-    }
-  }
-  globalThis.TextEncoder = TextEncoder; // 确保在所有环境中生效
-}
-
+//import sha1 from 'js-sha1';
+import { generateTOTP } from '../utils/finial';
 
 
 export default {
   props: {
+    id: Number,    // 账户的唯一标识符
     icon: String,      // 图标
     app: String,       // 应用名称
     name: String,      // 用户名
@@ -73,8 +63,8 @@ export default {
   },
   created() {
     this.startTOTP(); // 初始化 TOTP 逻辑
-    console.log("!!!!!")
-    console.log(this.code)
+    // console.log("!!!!!")
+    // console.log(this.code)
   },
   beforeDestroy() {
     clearInterval(this.timer); // 清理定时器
@@ -90,7 +80,22 @@ export default {
   methods: {
     onMoreOptions() {
       // 触发父组件提供的事件
-      this.$emit('more-options');
+      uni.showActionSheet({
+        itemList: ['修改', '删除'],
+        success: (res) => {
+          if (res.tapIndex === 0) {
+            // 选择了“修改”选项
+            this.$emit('edit-account', this.id); 
+          } else if (res.tapIndex === 1) {
+            // 选择了“删除”选项
+            this.$emit('delete-account', this.id);
+          }
+        },
+        fail: (err) => {
+          console.log('操作取消', err);
+        }
+      });
+      // this.$emit('more-options');
     },
     startTOTP() {
       // 设置定时器每秒更新
@@ -112,90 +117,8 @@ export default {
       // this.generateTOTP(this.secret).then((resolvedCode) => {
       //   this.code = resolvedCode; // 将解析后的验证码赋值给 this.code
       // });
-      this.code=this.generateTOTP(this.secret);
+      this.code=generateTOTP(this.secret);
     },
-
-    // generateTOTP(secret, timeStep = 30, digits = 6) {
-    //   console.log('Secret:', secret);
-
-    //   // 1️⃣ 计算时间步长（Counter）
-    //   const currentTime = Math.floor(Date.now() / 1000);
-    //   const counter = Math.floor(currentTime / timeStep);
-
-    //   // 2️⃣ 将 Counter 转为 8 字节的 ArrayBuffer
-    //   const counterBuffer = new ArrayBuffer(8);
-    //   const counterView = new DataView(counterBuffer);
-    //   counterView.setUint32(4, counter, false); // 写入低32位（大端序）
-
-    //   // 3️⃣ 确保 key 是 Uint8Array 类型
-    //   const key = new TextEncoder().encode(secret); // 确保 key 是 Uint8Array
-    //   const counterBytes = new Uint8Array(counterBuffer); // 确保 counter 是 Uint8Array
-
-    //   // 4️⃣ HMAC-SHA1 计算
-    //   const hmac = sha1.hmac(key, counterBytes);
-
-    //   // 5️⃣ 计算动态验证码
-    //   const offset = hmac[hmac.length - 1] & 0x0f; // 偏移量
-    //   const binaryCode =
-    //     ((hmac[offset] & 0x7f) << 24) |
-    //     ((hmac[offset + 1] & 0xff) << 16) |
-    //     ((hmac[offset + 2] & 0xff) << 8) |
-    //     (hmac[offset + 3] & 0xff);
-
-    //   // 6️⃣ 返回 6 位动态验证码
-    //   return (binaryCode % 10 ** digits).toString().padStart(digits, '0');
-    // }
-    generateTOTP(secret, timeStep = 30, digits = 6) {
-        console.log('Secret:', secret);
-
-        // 1️⃣ Base32 解码
-        const base32Chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-        const base32Decode = (input) => {
-          const bytes = [];
-          let buffer = 0, bits = 0;
-          for (const char of input) {
-            const value = base32Chars.indexOf(char.toUpperCase());
-            if (value === -1) continue;
-            buffer = (buffer << 5) | value;
-            bits += 5;
-            if (bits >= 8) {
-              bytes.push((buffer >> (bits - 8)) & 255);
-              bits -= 8;
-            }
-          }
-          return new Uint8Array(bytes);
-        };
-
-        const decodedSecret = base32Decode(secret);
-
-        // 2️⃣ 获取时间步长 Counter
-        const currentTime = Math.floor(Date.now() / 1000);
-        const counter = Math.floor(currentTime / timeStep);
-
-        // 3️⃣ 将 Counter 转为 8 字节 ArrayBuffer
-        const counterBuffer = new ArrayBuffer(8);
-        const counterView = new DataView(counterBuffer);
-        counterView.setUint32(4, counter, false); // 写入低32位（大端序）
-
-        // 4️⃣ HMAC-SHA1 计算（手动 HMAC 计算）
-        const key = decodedSecret; // HMAC 的密钥
-        const message = new Uint8Array(counterBuffer); // 8 字节的 counter
-        const hmac = sha1.hmac(key, message); // 使用 js-sha1 计算 HMAC-SHA1
-
-        // 5️⃣ 解析 HMAC 结果，计算动态验证码
-        const hmacBytes = Array.from(hmac).map((char) => char.charCodeAt(0)); // 将 HMAC 转换为 Uint8Array
-        const offset = hmacBytes[hmacBytes.length - 1] & 0x0f; // 取最后字节的低4位
-        const binaryCode =
-          ((hmacBytes[offset] & 0x7f) << 24) |
-          ((hmacBytes[offset + 1] & 0xff) << 16) |
-          ((hmacBytes[offset + 2] & 0xff) << 8) |
-          (hmacBytes[offset + 3] & 0xff);
-
-        // 6️⃣ 返回 6 位动态验证码
-        return (binaryCode % 10 ** digits).toString().padStart(digits, '0');
-      }
-
-
   }
 
 
@@ -251,6 +174,8 @@ export default {
   background: none; /* 没有背景 */
   border: none; /* 没有边框 */
   margin: 0%;
+  /* width: 24;
+  height: 24; */
   font-size: 20px;
   cursor: pointer; /* 鼠标移上去显示手型，表示可点击 */
   color: #999; /* 使用淡灰色，使得按钮不会过于显眼 */
